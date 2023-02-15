@@ -10,13 +10,16 @@ class InfoMessage:
     speed: float
     calories: float
 
+    MESSAGE_TEMPLATE = (
+        'Тип тренировки: {training_type}; '
+        'Длительность: {duration:.3f} ч.; '
+        'Дистанция: {distance:.3f} км; '
+        'Ср. скорость: {speed:.3f} км/ч; '
+        'Потрачено ккал: {calories:.3f}.'
+    )
+
     def get_message(self):
-        parameters = asdict(self, dict_factory=dict)
-        return (f"Тип тренировки: {parameters['training_type']}; "
-                f"Длительность: {parameters['duration']:.3f} ч.; "
-                f"Дистанция: {parameters['distance']:.3f} км; "
-                f"Ср. скорость: {parameters['speed']:.3f} км/ч; "
-                f"Потрачено ккал: {parameters['calories']:.3f}.")
+        return self.MESSAGE_TEMPLATE.format(**asdict(self))
 
 
 class Training:
@@ -121,8 +124,8 @@ class Swimming(Training):
         self.count_pool = count_pool
 
     def get_mean_speed(self):
-        pool_distance = self.length_pool * self.count_pool
-        return pool_distance / self.M_IN_KM / self.duration
+        return (self.length_pool * self.count_pool
+                / self.M_IN_KM / self.duration)
 
     def get_spent_calories(self):
         return (self.get_mean_speed() + self.SWIM_CAL_COEF) *\
@@ -134,8 +137,10 @@ def read_package(workout_type: str, data: list) -> Training:
     types_of_workout: dict[str, type[Training]] = {'SWM': Swimming,
                                                    'RUN': Running,
                                                    'WLK': SportsWalking}
-    if workout_type in types_of_workout:
-        return types_of_workout[workout_type](*data)
+    if workout_type not in types_of_workout:
+        raise ValueError("Неверный тип данных")
+    return types_of_workout[workout_type](*data)
+    
 
 
 def main(training: Training,) -> None:
